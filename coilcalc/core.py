@@ -336,7 +336,7 @@ class Task(object):
     def run(self, processes: int = 1):
         """
         User-facing wrapper for single-process and multi-process run methods.
-        :param processes: Number of processes: 1 for single-threaded operation
+        :param processes: Number of processes: 1 for single-threaded
         :return: None
         """
         if processes < 1:
@@ -347,7 +347,7 @@ class Task(object):
             if multiprocessing is not None:
                 self._run_mp(processes=processes)
             else:
-                logger.log_event("Multiprocessing module disabled - falling back to single-threaded operation")
+                logger.log_event("Multiprocessing module disabled - falling back to single-threaded calculation")
                 self._run_sp()
 
     def _run_sp_legacy(self):
@@ -619,7 +619,7 @@ def run_tasks(tasks: [Task], processes=1):
     :return: list of tasks(done)
     """
     if multiprocessing is None and processes > 1:
-        print("multiprocessing not working, falling back to single threaded operation")
+        print("multiprocessing not working, falling back to single threaded calculation")
         for task in tasks:
             task.run()
         return tasks
