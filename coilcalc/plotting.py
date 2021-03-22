@@ -44,7 +44,7 @@ def draw_magnet(ax, magnet: Magnet):
         ax.add_artist(circle)
 
 
-def draw_normalized_gradient(cal: Task, cmap='inferno', norm=None, field_axis='y', gradient_axes='xy', vmin=0.0001,
+def draw_normalized_gradient(cal: Task, cmap='inferno', norm=None, field_axis='y', gradient_axes='xyt', vmin=0.0001,
                              vmax=0.01, ax=None, colorbar=True, cell_length=100, cell_diameter=60):
     if norm is None:
         norm = LogNorm(vmin=vmin, vmax=vmax)

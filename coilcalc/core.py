@@ -556,7 +556,7 @@ class Task(object):
 
         return xi, yi
 
-    def make_gradient_interpolator(self, lat_field_axis='y', gradient_axes="xy"):
+    def make_gradient_interpolator(self, lat_field_axis='y', gradient_axes="xyt"):
         # TODO: figure out if RegularGridInterpolator REALLY takes ij indexing instead of xy
         g = find_gradient(self, lat_field_axis=lat_field_axis, gradient_axes=gradient_axes)
         x = self.mesh.x_linspace

@@ -1,22 +1,37 @@
 import numpy as np
 
 
-def find_gradient(cal, lat_field_axis='y', gradient_axes="xy"):
+def find_gradient(task, lat_field_axis='y', gradient_axes="xyt"):
+    """
+    Finds the lateral field gradient in given axes.
+    :param task: completed task object.
+    :param lat_field_axis: Which field component should be calculated. Doesn't make sense except y direction, really.
+    :param gradient_axes: Gradient along which directions are considered. xy: gradient in the axial plane. xyt: xy plus
+    the tangential gradient.
+    :return: An array describing the field gradient figure.
+    """
     if lat_field_axis == 'y':
-        lat_field = cal.y_field
+        lat_field = task.y_field
     elif lat_field_axis == 'x':
-        lat_field = cal.x_field
+        lat_field = task.x_field
     else:
-        raise ValueError("Gradient calculation: lat_field_axis accepts either x or y.")
+        raise ValueError("Gradient calculation: lat_field_axis accepts x, y, xy or xyt.")
 
-    gradient_1 = np.gradient(lat_field, cal.mesh.y_step / 10, axis=0)
-    gradient_2 = np.gradient(lat_field, cal.mesh.x_step / 10, axis=1)
-    if gradient_axes == 'xy':
-        g = np.sqrt(gradient_1 ** 2 + gradient_2 ** 2)
+    gradient_y = np.gradient(lat_field, task.mesh.y_step / 10, axis=0)
+    gradient_x = np.gradient(lat_field, task.mesh.x_step / 10, axis=1)
+    if gradient_axes == 'xyt':
+        g_axial_plane = np.sqrt(gradient_y ** 2 + gradient_x ** 2)
+        y_mesh_nonzero = task.y_mesh.copy()
+        y_mesh_nonzero[y_mesh_nonzero==0] = 1
+        g_tangent = task.y_field / y_mesh_nonzero * 10
+        g = np.sqrt(g_axial_plane ** 2 + g_tangent ** 2)
+
+    elif gradient_axes == 'xy':
+        g = np.sqrt(gradient_y ** 2 + gradient_x ** 2)
     elif gradient_axes == 'y':
-        g = np.abs(gradient_1)
+        g = np.abs(gradient_y)
     elif gradient_axes == 'x':
-        g = np.abs(gradient_2)
+        g = np.abs(gradient_x)
     else:
         raise ValueError("Gradient calculation: gradient axes accepts x or y or xy.")
     return g
