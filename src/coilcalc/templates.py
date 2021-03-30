@@ -1,4 +1,4 @@
-from coilcalc import Magnet
+from coilcalc.core import Magnet
 
 
 def compensated_solenoid(length=300, d0=200, turns_main=420, turns_comp=63, wire_diameter=0.66, layers_main=1,
