@@ -1,4 +1,4 @@
-from coilcalc.core import Magnet
+from coilcalc.core import CurrentLoop
 
 
 def compensated_solenoid(length=300, d0=200, turns_main=420, turns_comp=63, wire_diameter=0.66, layers_main=1,
@@ -16,11 +16,11 @@ def compensated_solenoid(length=300, d0=200, turns_main=420, turns_comp=63, wire
     :param current: Current for the magnet - a single current flows all 3 coils.
     :return: A list of magnets.
     """
-    mag_0 = Magnet([-length / 2, length / 2], d0 / 2, turns_main, current, layers_main, wire_diameter)
-    mag_left = Magnet([-length / 2, -length / 2 + turns_comp * wire_diameter], d0 / 2 + wire_diameter, turns_comp,
-                      current, layers_comp, wire_diameter)
-    mag_right = Magnet([length / 2, length / 2 - turns_comp * wire_diameter], d0 / 2 + wire_diameter, turns_comp,
-                       current, layers_comp, wire_diameter)
+    mag_0 = CurrentLoop([-length / 2, length / 2], d0 / 2, turns_main, current, layers_main, wire_diameter)
+    mag_left = CurrentLoop([-length / 2, -length / 2 + turns_comp * wire_diameter], d0 / 2 + wire_diameter, turns_comp,
+                           current, layers_comp, wire_diameter)
+    mag_right = CurrentLoop([length / 2, length / 2 - turns_comp * wire_diameter], d0 / 2 + wire_diameter, turns_comp,
+                            current, layers_comp, wire_diameter)
     return [mag_0, mag_left, mag_right]
 
 
@@ -35,8 +35,8 @@ def helmholtz_coil(r=300, coil_width=20.0, coil_thickness=5.0, current=1, turns=
     :return: A list of magnets
     """
     dr = coil_width / 2
-    mag_0 = Magnet([-r / 2 - dr, -r / 2 + dr], r - coil_thickness / 2, 9, current * turns / 9, 3, coil_thickness / 2)
-    mag_1 = Magnet([r / 2 - dr, r / 2 + dr], r - coil_thickness / 2, 9, current * turns / 9, 3, coil_thickness / 2)
+    mag_0 = CurrentLoop([-r / 2 - dr, -r / 2 + dr], r - coil_thickness / 2, 9, current * turns / 9, 3, coil_thickness / 2)
+    mag_1 = CurrentLoop([r / 2 - dr, r / 2 + dr], r - coil_thickness / 2, 9, current * turns / 9, 3, coil_thickness / 2)
 
     return [mag_0, mag_1]
 
@@ -58,9 +58,9 @@ def three_coils(half_length=259.8, r_side=300, r_center=300, coil_width=20.0, co
     """
     current_side_sim = current * turns_side / 9
     current_center_sim = current * turns_center / 9
-    mag1 = Magnet([-half_length - coil_width / 2, -half_length + coil_width / 2], r_side, 9, current_side_sim, 3, coil_thickness / 2)
-    mag2 = Magnet([half_length - coil_width / 2, half_length + coil_width / 2], r_side, 9, current_side_sim, 3, coil_thickness / 2)
-    magc = Magnet([0 - coil_width / 2, 0 + coil_width / 2], r_center, 9, current_center_sim, 3, coil_thickness / 2)
+    mag1 = CurrentLoop([-half_length - coil_width / 2, -half_length + coil_width / 2], r_side, 9, current_side_sim, 3, coil_thickness / 2)
+    mag2 = CurrentLoop([half_length - coil_width / 2, half_length + coil_width / 2], r_side, 9, current_side_sim, 3, coil_thickness / 2)
+    magc = CurrentLoop([0 - coil_width / 2, 0 + coil_width / 2], r_center, 9, current_center_sim, 3, coil_thickness / 2)
 
     return [mag1, mag2, magc]
 

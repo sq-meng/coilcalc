@@ -10,7 +10,7 @@ except ImportError:
     multiprocessing = None
 
 
-class Magnet(object):
+class CurrentLoop(object):
     def __init__(self, x_span: (list, float, int), radius: (list, float, int), nturns: int, current: float,
                  layers: int = 1, layer_thickness: float = 1.0, current_multiplier: float = 1.0):
         """
@@ -130,7 +130,7 @@ class Magnet(object):
         self._current_multiplier = value
 
     def __copy__(self):
-        return Magnet(self.x_span, self.radius, self.nturns, self.current, self.layers, self.layer_thickness)
+        return CurrentLoop(self.x_span, self.radius, self.nturns, self.current, self.layers, self.layer_thickness)
 
     def get_loop_list(self):
         """
@@ -304,7 +304,7 @@ class Task(object):
             self.set_mesh(mesh)
 
     def add_magnet(self, magnet):
-        if isinstance(magnet, Magnet):
+        if isinstance(magnet, CurrentLoop):
             self._magnets.append(magnet.__copy__())
             self.done = False
         else:
@@ -567,7 +567,7 @@ class Task(object):
         return RegularGridInterpolator((x, y), g.T)
 
 
-def run_task(mesh: Mesh, magnets: [Magnet], processes=1):
+def run_task(mesh: Mesh, magnets: [CurrentLoop], processes=1):
     """
     Takes a mesh and a list of magnets and run the simulation.
     :param mesh: Mesh.

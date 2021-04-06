@@ -2,7 +2,7 @@ from coilcalc._mpl_wrap import *
 
 import matplotlib.pyplot as plt
 import numpy as np
-from coilcalc.core import Task, Magnet, Mesh
+from coilcalc.core import Task, CurrentLoop, Mesh
 from matplotlib.pyplot import Rectangle, Circle
 from coilcalc.calculations import find_gradient
 from matplotlib.colors import LogNorm, Normalize
@@ -24,7 +24,7 @@ def draw_mesh_boundary(mesh: Mesh, ax):
     ax.add_artist(r)
 
 
-def draw_magnet(ax, magnet: Magnet):
+def draw_magnet(ax, magnet: CurrentLoop):
     c1 = np.asarray(magnet.get_loop_list())
     c2 = c1 * [1, -1, 1]
     try:
