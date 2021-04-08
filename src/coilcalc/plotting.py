@@ -24,8 +24,8 @@ def draw_mesh_boundary(mesh: Mesh, ax):
     ax.add_artist(r)
 
 
-def draw_magnet(ax, magnet: CurrentLoop):
-    c1 = np.asarray(magnet.get_loop_list())
+def draw_source(ax, source: CurrentLoop):
+    c1 = np.asarray(source.get_loop_list())
     c2 = c1 * [1, -1, 1]
     try:
         dia = np.sqrt(np.power(c1[0][0] - c1[1][0], 2) + np.power(c1[0][1] - c1[1][1], 2))
@@ -33,7 +33,7 @@ def draw_magnet(ax, magnet: CurrentLoop):
     except IndexError:
         dia = 1.0
     neg = np.asarray([1, -1])
-    poly = plt.Polygon((magnet.start, magnet.end,  magnet.end * neg, magnet.start * neg), color=[0.4, 0.4, 0.4, 0.25],
+    poly = plt.Polygon((source.start, source.end, source.end * neg, source.start * neg), color=[0.4, 0.4, 0.4, 0.25],
                        zorder=0)
     ax.add_artist(poly)
     for loop in c1:
@@ -54,7 +54,7 @@ def draw_normalized_gradient(cal: Task, cmap='inferno', norm=None, field_axis='y
     else:
         f = ax.figure
     for magnet in cal.magnets:
-        draw_magnet(ax, magnet)
+        draw_source(ax, magnet)
     gradient = find_gradient(cal, lat_field_axis=field_axis, gradient_axes=gradient_axes) / cal.center_field[0]
     contour_plot = ax.contour(cal.x_mesh, cal.y_mesh, np.abs(gradient), [2e-4, 5e-4, 1e-3, 2e-3, 0.005],
                               colors='w', zorder=10)
@@ -86,7 +86,7 @@ def draw_intensity(cal: Task, cmap='inferno', norm=None, field_axis='x', vmin=0.
     else:
         f = ax.figure
     for magnet in cal.magnets:
-        draw_magnet(ax, magnet)
+        draw_source(ax, magnet)
     if field_axis == 'x':
         field = cal.x_field
     elif field_axis == 'y':

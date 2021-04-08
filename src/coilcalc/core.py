@@ -288,38 +288,38 @@ def _slice_list(entries, processes=4):
 
 
 class Task(object):
-    def __init__(self, magnets=None, mesh=None):
+    def __init__(self, sources=None, mesh=None):
         self.done = False
-        self._magnets = []
+        self._sources = []
         self._mesh = None
         self._x_field = None
         self._y_field = None
         self._center_field = None
         self._x_field_interpolator = None
         self._y_field_interpolator = None
-        if magnets is not None:
-            for magnet in magnets:
-                self.add_magnet(magnet)
+        if sources is not None:
+            for source in sources:
+                self.add_source(source)
         if mesh is not None:
             self.set_mesh(mesh)
 
-    def add_magnet(self, magnet):
+    def add_source(self, magnet):
         if isinstance(magnet, CurrentLoop):
-            self._magnets.append(magnet.__copy__())
+            self._sources.append(magnet.__copy__())
             self.done = False
         else:
             raise TypeError("Add magnet: Wrong type supplied, expected magnet definition.")
 
-    def remove_magnet(self, index: (int, None) = None):
+    def remove_source(self, index: (int, None) = None):
         """
         Remove magnet at index n.
         :param index: index to be removed. Clears the list if not provided.
         :return: None
         """
         if index is None:
-            self._magnets = []
+            self._sources = []
         else:
-            self._magnets.pop(index)
+            self._sources.pop(index)
 
     def set_mesh(self, mesh: Mesh):
         """
@@ -362,7 +362,7 @@ class Task(object):
         y_field = np.zeros(x_mesh.shape)
         for i in range(x_mesh.shape[0]):
             for j in range(x_mesh.shape[1]):
-                for magnet in self._magnets:
+                for magnet in self._sources:
                     loops = magnet.get_loop_list()
                     for loop in loops:
                         xp = x_mesh[i][j]
@@ -391,7 +391,7 @@ class Task(object):
         x_mesh, y_mesh = self._mesh.get_matrix()
         x_field = np.zeros(x_mesh.shape)
         y_field = np.zeros(x_mesh.shape)
-        loops = np.vstack([magnet.get_loop_list() for magnet in self._magnets])
+        loops = np.vstack([magnet.get_loop_list() for magnet in self._sources])
         for i in range(x_mesh.shape[0]):
             for j in range(x_mesh.shape[1]):
                 xp = x_mesh[i][j]
@@ -444,7 +444,7 @@ class Task(object):
         y_field = np.zeros(x_mesh.shape)
         i = range(0, x_mesh.shape[0])
         j = range(0, x_mesh.shape[1])
-        magnet_loops = np.vstack([magnet.get_loop_list() for magnet in self._magnets])
+        magnet_loops = np.vstack([magnet.get_loop_list() for magnet in self._sources])
         split_ij = _slice_list(list(product(i, j)), processes)
         logger.timestamp(0, "Slicing done")
         pool = multiprocessing.Pool(processes=processes)
@@ -470,7 +470,7 @@ class Task(object):
 
     @property
     def magnets(self):
-        return self._magnets
+        return self._sources
 
     @property
     def x_field(self):
@@ -567,24 +567,24 @@ class Task(object):
         return RegularGridInterpolator((x, y), g.T)
 
 
-def run_task(mesh: Mesh, magnets: [CurrentLoop], processes=1):
+def run_task(mesh: Mesh, sources: [CurrentLoop], processes=1):
     """
     Takes a mesh and a list of magnets and run the simulation.
     :param mesh: Mesh.
-    :param magnets: A list of Magnets.
+    :param sources: A list of Magnets.
     :param processes: Number of parallel processes.
     :return: the finished calculation object.
     """
-    cal = Task(mesh=mesh, magnets=magnets)
+    cal = Task(mesh=mesh, sources=sources)
     cal.run(processes=processes)
     return cal
 
 
-def run_magnets_on_mesh(mesh, magnets_list, processes=1):
+def run_magnets_on_mesh(mesh, sources_list, processes=1):
     """
     Run multiple sets of magnets on the mesh, supports multiprocessing.
     :param mesh: Mesh to be used in calculations.
-    :param magnets_list: a LIST of LISTS of magnets, like:
+    :param sources_list: a LIST of LISTS of magnets, like:
     [[mag1_1, mag1_2, mag1_3],
      [mag2_2, mag2_2, mag2_3],
      ...]
@@ -594,14 +594,14 @@ def run_magnets_on_mesh(mesh, magnets_list, processes=1):
     if multiprocessing is None and processes > 1:
         print("multiprocessing not working, falling back to single threaded operation")
         result = []
-        for magnets in magnets_list:
-            task = Task(mesh=mesh, magnets=magnets)
+        for magnets in sources_list:
+            task = Task(mesh=mesh, sources=magnets)
             task.run()
             result.append(task)
         return result
     else:
         pool = multiprocessing.Pool(processes=processes)
-        arglist = [[mesh, magnets] for magnets in magnets_list]
+        arglist = [[mesh, magnets] for magnets in sources_list]
         return pool.starmap(run_task, arglist)
 
 
