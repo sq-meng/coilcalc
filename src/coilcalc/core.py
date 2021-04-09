@@ -1,9 +1,12 @@
+from coilcalc._mpl_wrap import *
 import numpy as np
-import coilcalc._off_axis_loop as field_calculator
+import coilcalc._off_axis_loop as loop_calculator
 from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
 from coilcalc.calculations import find_gradient
 from itertools import product
 from coilcalc._signals import logger
+from matplotlib.pyplot import Rectangle, Circle, Polygon
+import coilcalc._current_sheet as sheet_calculator
 try:
     import multiprocessing
 except ImportError:
@@ -165,9 +168,120 @@ class CurrentLoop(object):
             x = (xp - loop[0]) / 1000
             r = yp / 1000
             current = loop[2]
-            bx += field_calculator.field_axial(current, a, x, abs(r))
-            br += field_calculator.field_radial(current, a, x, abs(r))
+            bx += loop_calculator.field_axial(current, a, x, abs(r))
+            br += loop_calculator.field_radial(current, a, x, abs(r))
         return bx, br
+
+    def draw_source(self, ax):
+        source = self
+        c1 = np.asarray(source.get_loop_list())
+        c2 = c1 * [1, -1, 1]
+        try:
+            dia = np.sqrt(np.power(c1[0][0] - c1[1][0], 2) + np.power(c1[0][1] - c1[1][1], 2))
+            dia = min(dia, 1.0)
+        except IndexError:
+            dia = 1.0
+        neg = np.asarray([1, -1])
+        poly = Polygon((source.start, source.end, source.end * neg, source.start * neg),
+                           color=[0.4, 0.4, 0.4, 0.25],
+                           zorder=0)
+        ax.add_artist(poly)
+        for loop in c1:
+            circle = Circle((loop[0], loop[1]), dia / 2, fill=None)
+            ax.add_artist(circle)
+        for loop in c2:
+            circle = Circle((loop[0], loop[1]), dia / 2, fill=None)
+            ax.add_artist(circle)
+
+
+class CurrentSheet(object):
+    def __init__(self, x_span: (list, float, int), radius, nturns: int, current: float, current_multiplier=1):
+        self._x_span = None
+        self._radius = None
+        self._nturns = None
+        self._reverse_polarity = None
+        self._current = None
+        self._current_multiplier = None
+        self.x_span = x_span
+        self.radius = radius
+        self.nturns = nturns
+        self.current = current
+        self.current_multiplier = current_multiplier
+
+    @property
+    def x_span(self):
+        return self._x_span
+
+    @x_span.setter
+    def x_span(self, value):
+        try:
+            _ = value[1]
+            self._x_span = value
+        except (TypeError, IndexError, ValueError):
+            self._x_span = [value, value]
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @radius.setter
+    def radius(self, value):
+        try:
+            _ = value[1]
+            self._radius = value
+        except (TypeError, IndexError, ValueError):
+            self._radius = [value, value]
+
+    @property
+    def start(self):
+        """
+        (x, y) coordinates of where the coil starts.
+        :return: (x, y) in mm.
+        """
+        return [self._x_span[0], self._radius[0]]
+
+    @property
+    def end(self):
+        """
+        (x, y) coordinates of where the coil ends.
+        :return: (x, y) in mm.
+        """
+        return [self._x_span[1], self._radius[1]]
+
+    @property
+    def nturns(self):
+        return self._nturns
+
+    @nturns.setter
+    def nturns(self, value):
+        if value >= 1:
+            self._nturns = int(value)
+        else:
+            raise ValueError("Magnet: cannot define a magnet with less than 1 turn.")
+
+    @property
+    def current(self):
+        """
+        Current in the coil, amps.
+        :return: float.
+        """
+        return self._current
+
+    @current.setter
+    def current(self, value):
+        self._current = value
+
+    @property
+    def length(self):
+        return np.abs(self.x_span[1] - self.x_span[0])
+
+    def get_field(self, xp, yp):
+        x_center = np.mean(x.span)
+        x = xp - x_center
+        rho = yp
+        fr = sheet_calculator.field_radial(self.current * self.nturns, self.radius, self.length, x, rho)
+        fx = sheet_calculator.field_axial(self.current * self.nturns, self.radius, self.length, x, rho)
+        return (fx, fr)
 
 
 class Mesh(object):
@@ -371,8 +485,8 @@ class Task(object):
                         x = (xp - loop[0]) / 1000
                         r = yp / 1000
                         current = loop[2]
-                        bx = field_calculator.field_axial(current, a, x, abs(r))
-                        br = field_calculator.field_radial(current, a, x, abs(r))
+                        bx = loop_calculator.field_axial(current, a, x, abs(r))
+                        br = loop_calculator.field_radial(current, a, x, abs(r))
                         x_field[i][j] += bx
                         if r >= 0:
                             y_field[i][j] += br
@@ -400,8 +514,8 @@ class Task(object):
                 x = (xp - loops[:, 0]) / 1000
                 r = yp / 1000
                 current = loops[:, 2]
-                bx = field_calculator.field_axial(current, a, x, abs(r))
-                br = field_calculator.field_radial(current, a, x, abs(r))
+                bx = loop_calculator.field_axial(current, a, x, abs(r))
+                br = loop_calculator.field_radial(current, a, x, abs(r))
                 x_field[i][j] += np.sum(bx)
                 if r >= 0:
                     y_field[i][j] += np.sum(br)
@@ -426,8 +540,8 @@ class Task(object):
             x = (xp - loops[:, 0]) / 1000
             r = yp / 1000
             current = loops[:, 2]
-            bx = field_calculator.field_axial(current, a, x, abs(r))
-            br = field_calculator.field_radial(current, a, x, abs(r))
+            bx = loop_calculator.field_axial(current, a, x, abs(r))
+            br = loop_calculator.field_radial(current, a, x, abs(r))
             x_field[i][j] += np.sum(bx)
             if r >= 0:
                 y_field[i][j] += np.sum(br)

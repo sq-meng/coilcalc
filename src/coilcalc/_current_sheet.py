@@ -1,5 +1,3 @@
-
-
 import numpy as np
 from scipy.integrate import quad
 from numpy import pi
@@ -46,5 +44,3 @@ def field_axial(Itot, a, l, z, r):
     kplus = np.sqrt((zplus ** 2 + (a - r) ** 2) / (zplus ** 2 + (a + r) ** 2))
     kminus = np.sqrt((zminus ** 2 + (a - r) ** 2) / (zminus ** 2 + (a + r) ** 2))
     return b0 * a / (a + r) * (beta_plus * cel(kplus, gamma ** 2, 1, gamma) - beta_minus * cel(kminus, gamma ** 2, 1, gamma))
-
-print(field_axial(504, 123/1000, 360/1000, 0, 0))

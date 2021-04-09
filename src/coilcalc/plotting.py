@@ -1,5 +1,3 @@
-from coilcalc._mpl_wrap import *
-
 import matplotlib.pyplot as plt
 import numpy as np
 from coilcalc.core import Task, CurrentLoop, Mesh
@@ -25,23 +23,24 @@ def draw_mesh_boundary(mesh: Mesh, ax):
 
 
 def draw_source(ax, source: CurrentLoop):
-    c1 = np.asarray(source.get_loop_list())
-    c2 = c1 * [1, -1, 1]
-    try:
-        dia = np.sqrt(np.power(c1[0][0] - c1[1][0], 2) + np.power(c1[0][1] - c1[1][1], 2))
-        dia = min(dia, 1.0)
-    except IndexError:
-        dia = 1.0
-    neg = np.asarray([1, -1])
-    poly = plt.Polygon((source.start, source.end, source.end * neg, source.start * neg), color=[0.4, 0.4, 0.4, 0.25],
-                       zorder=0)
-    ax.add_artist(poly)
-    for loop in c1:
-        circle = Circle((loop[0], loop[1]), dia/2, fill=None)
-        ax.add_artist(circle)
-    for loop in c2:
-        circle = Circle((loop[0], loop[1]), dia/2, fill=None)
-        ax.add_artist(circle)
+    source.draw_source(ax)
+    # c1 = np.asarray(source.get_loop_list())
+    # c2 = c1 * [1, -1, 1]
+    # try:
+    #     dia = np.sqrt(np.power(c1[0][0] - c1[1][0], 2) + np.power(c1[0][1] - c1[1][1], 2))
+    #     dia = min(dia, 1.0)
+    # except IndexError:
+    #     dia = 1.0
+    # neg = np.asarray([1, -1])
+    # poly = plt.Polygon((source.start, source.end, source.end * neg, source.start * neg), color=[0.4, 0.4, 0.4, 0.25],
+    #                    zorder=0)
+    # ax.add_artist(poly)
+    # for loop in c1:
+    #     circle = Circle((loop[0], loop[1]), dia/2, fill=None)
+    #     ax.add_artist(circle)
+    # for loop in c2:
+    #     circle = Circle((loop[0], loop[1]), dia/2, fill=None)
+    #     ax.add_artist(circle)
 
 
 def draw_normalized_gradient(cal: Task, cmap='inferno', norm=None, field_axis='y', gradient_axes='xyt', vmin=0.0001,
