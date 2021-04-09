@@ -154,7 +154,7 @@ class CurrentLoop(object):
             coil_layers.append(this_layer)
         return np.vstack(coil_layers)
 
-    def calculate_field(self, xp, yp):
+    def b_field(self, xp, yp):
         """
         Calculate the field at [xp, yp]
         :param xp: x coords, in mm.
@@ -168,8 +168,8 @@ class CurrentLoop(object):
             x = (xp - loop[0]) / 1000
             r = yp / 1000
             current = loop[2]
-            bx += loop_calculator.field_axial(current, a, x, abs(r))
-            br += loop_calculator.field_radial(current, a, x, abs(r))
+            bx += loop_calculator.field_axial(current, a, x, r)
+            br += loop_calculator.field_radial(current, a, x, r)
         return bx, br
 
     def draw_source(self, ax):
@@ -275,12 +275,12 @@ class CurrentSheet(object):
     def length(self):
         return np.abs(self.x_span[1] - self.x_span[0])
 
-    def get_field(self, xp, yp):
-        x_center = np.mean(x.span)
+    def b_field(self, xp, yp):
+        x_center = np.mean(self.x_span)
         x = xp - x_center
         rho = yp
-        fr = sheet_calculator.field_radial(self.current * self.nturns, self.radius, self.length, x, rho)
-        fx = sheet_calculator.field_axial(self.current * self.nturns, self.radius, self.length, x, rho)
+        fr = sheet_calculator.field_radial(self.current * self.nturns, self.radius[0], self.length, x, rho)
+        fx = sheet_calculator.field_axial(self.current * self.nturns, self.radius[0], self.length, x, rho)
         return (fx, fr)
 
 
@@ -412,8 +412,12 @@ class Task(object):
         self._x_field_interpolator = None
         self._y_field_interpolator = None
         if sources is not None:
-            for source in sources:
-                self.add_source(source)
+            try:
+                for source in sources:
+                    self.add_source(source)
+            except TypeError:
+                self.add_source(sources)
+
         if mesh is not None:
             self.set_mesh(mesh)
 
@@ -485,8 +489,8 @@ class Task(object):
                         x = (xp - loop[0]) / 1000
                         r = yp / 1000
                         current = loop[2]
-                        bx = loop_calculator.field_axial(current, a, x, abs(r))
-                        br = loop_calculator.field_radial(current, a, x, abs(r))
+                        bx = loop_calculator.field_axial(current, a, x, r)
+                        br = loop_calculator.field_radial(current, a, x, r)
                         x_field[i][j] += bx
                         if r >= 0:
                             y_field[i][j] += br
@@ -514,8 +518,8 @@ class Task(object):
                 x = (xp - loops[:, 0]) / 1000
                 r = yp / 1000
                 current = loops[:, 2]
-                bx = loop_calculator.field_axial(current, a, x, abs(r))
-                br = loop_calculator.field_radial(current, a, x, abs(r))
+                bx = loop_calculator.field_axial(current, a, x, r)
+                br = loop_calculator.field_radial(current, a, x, r)
                 x_field[i][j] += np.sum(bx)
                 if r >= 0:
                     y_field[i][j] += np.sum(br)
@@ -540,8 +544,8 @@ class Task(object):
             x = (xp - loops[:, 0]) / 1000
             r = yp / 1000
             current = loops[:, 2]
-            bx = loop_calculator.field_axial(current, a, x, abs(r))
-            br = loop_calculator.field_radial(current, a, x, abs(r))
+            bx = loop_calculator.field_axial(current, a, x, r)
+            br = loop_calculator.field_radial(current, a, x, r)
             x_field[i][j] += np.sum(bx)
             if r >= 0:
                 y_field[i][j] += np.sum(br)

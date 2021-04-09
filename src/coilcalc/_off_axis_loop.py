@@ -42,6 +42,8 @@ def Baxial(i, a, x, u=u0):
 
 
 def field_axial(i, a, x, r):
+    # sign of r not important here
+    r = np.abs(r)
     return B0(i, a) * (E(k(r, x, a)) * (1 - alpha(r, a) ** 2 - beta(x, a) ** 2) / (Q(r, x, a) - 4 * alpha(r, a)) +
                            K(k(r, x, a))) / pi / sqrt(Q(r, x, a))
 
@@ -55,6 +57,8 @@ def field_radial(i, a, x, r):
     :param r: distance from loop axis in meters.
     :return: field at (x, r) in Tesla.
     """
+    sr = np.sign(r)
+    r = np.abs(r)
     try:
         # if r is not an array and equals to 0.
         if r == 0:
@@ -71,4 +75,4 @@ def field_radial(i, a, x, r):
     except TypeError:
         # r is not an array, but is also not zero.
         pass
-    return res
+    return res * sr

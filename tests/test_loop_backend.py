@@ -17,3 +17,4 @@ def test_coil_integrity():
     assert np.allclose(r1x, r2x)
     assert np.allclose(r1r, r2r)
     assert np.isclose(m1.field_axial(2.2, 5, 3, 1), 1.7293349e-07)
+    assert np.isclose(m1.field_axial(2.2, 5, 3, -1), 1.7293349e-07)
