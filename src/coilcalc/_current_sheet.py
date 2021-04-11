@@ -15,10 +15,10 @@ def cel(kc, p, c, s):
     return quad(cel_func, 0, pi / 2, (kc, p, c, s))[0]
 
 
-def field_radial(Itot, a, l, z, r):
-    (a, l, z, r) = (a / 1000, l / 1000, z / 1000, r / 1000)
-    b = l / 2
-    I = Itot / l
+def field_radial(i_tot, a, length, z, r):
+    (a, length, z, r) = (a / 1000, length / 1000, z / 1000, r / 1000)
+    b = length / 2
+    I = i_tot / length
     b0 = u0 / pi * I
     zplus = z + b
     zminus = z - b
@@ -29,10 +29,10 @@ def field_radial(Itot, a, l, z, r):
     return b0 * (alpha_plus * cel(kplus, 1, 1, -1) - alpha_minus * cel(kminus, 1, 1, -1))
 
 
-def field_axial(Itot, a, l, z, r):
+def field_axial(i_tot, a, l, z, r):
     (a, l, z, r) = (a / 1000, l / 1000, z / 1000, r / 1000)
     b = l / 2
-    I = Itot / l
+    I = i_tot / l
     b0 = u0 / pi * I
     zplus = z + b
     zminus = z - b

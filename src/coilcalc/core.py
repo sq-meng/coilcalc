@@ -5,7 +5,7 @@ from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
 from coilcalc.calculations import find_gradient
 from itertools import product
 from coilcalc._signals import logger
-from matplotlib.pyplot import Rectangle, Circle, Polygon
+from matplotlib.pyplot import Rectangle, Circle, Polygon, Line2D
 import coilcalc._current_sheet as sheet_calculator
 try:
     import multiprocessing
@@ -42,7 +42,7 @@ class CurrentLoop(object):
 
     @property
     def x_span(self):
-        return self._x_span
+        return np.asarray(self._x_span)
 
     @x_span.setter
     def x_span(self, value):
@@ -54,7 +54,7 @@ class CurrentLoop(object):
 
     @property
     def radius(self):
-        return self._radius
+        return np.asarray(self._radius)
 
     @radius.setter
     def radius(self, value):
@@ -70,7 +70,7 @@ class CurrentLoop(object):
         (x, y) coordinates of where the coil starts.
         :return: (x, y) in mm.
         """
-        return [self._x_span[0], self._radius[0]]
+        return np.asarray([self._x_span[0], self._radius[0]])
 
     @property
     def end(self):
@@ -78,7 +78,7 @@ class CurrentLoop(object):
         (x, y) coordinates of where the coil ends.
         :return: (x, y) in mm.
         """
-        return [self._x_span[1], self._radius[1]]
+        return np.asarray([self._x_span[1], self._radius[1]])
 
     @property
     def nturns(self):
@@ -183,14 +183,14 @@ class CurrentLoop(object):
             dia = 1.0
         neg = np.asarray([1, -1])
         poly = Polygon((source.start, source.end, source.end * neg, source.start * neg),
-                           color=[0.4, 0.4, 0.4, 0.25],
-                           zorder=0)
+                       color=[0.4, 0.4, 0.4, 0.25],
+                       zorder=0)
         ax.add_artist(poly)
         for loop in c1:
-            circle = Circle((loop[0], loop[1]), dia / 2, fill=None)
+            circle = Circle((loop[0], loop[1]), dia / 2, color='r', fill=None)
             ax.add_artist(circle)
         for loop in c2:
-            circle = Circle((loop[0], loop[1]), dia / 2, fill=None)
+            circle = Circle((loop[0], loop[1]), dia / 2, color='r',  fill=None)
             ax.add_artist(circle)
 
 
@@ -210,7 +210,7 @@ class CurrentSheet(object):
 
     @property
     def x_span(self):
-        return self._x_span
+        return np.asarray(self._x_span)
 
     @x_span.setter
     def x_span(self, value):
@@ -222,7 +222,7 @@ class CurrentSheet(object):
 
     @property
     def radius(self):
-        return self._radius
+        return np.asarray(self._radius)
 
     @radius.setter
     def radius(self, value):
@@ -238,7 +238,7 @@ class CurrentSheet(object):
         (x, y) coordinates of where the coil starts.
         :return: (x, y) in mm.
         """
-        return [self._x_span[0], self._radius[0]]
+        return np.asarray([self._x_span[0], self._radius[0]])
 
     @property
     def end(self):
@@ -246,7 +246,7 @@ class CurrentSheet(object):
         (x, y) coordinates of where the coil ends.
         :return: (x, y) in mm.
         """
-        return [self._x_span[1], self._radius[1]]
+        return np.asarray([self._x_span[1], self._radius[1]])
 
     @property
     def nturns(self):
@@ -281,7 +281,19 @@ class CurrentSheet(object):
         rho = yp
         fr = sheet_calculator.field_radial(self.current * self.nturns, self.radius[0], self.length, x, rho)
         fx = sheet_calculator.field_axial(self.current * self.nturns, self.radius[0], self.length, x, rho)
-        return (fx, fr)
+        return fx, fr
+
+    def draw_source(self, ax):
+        source = self
+        neg = np.asarray([1, -1])
+        area = Polygon((source.start, source.end, source.end * neg, source.start * neg),
+                       color=[0.4, 0.4, 0.4, 0.25],
+                       zorder=0)
+        ax.add_artist(area)
+        upper_line = Line2D(source.x_span, source.radius, color='r')
+        lower_line = Line2D(source.x_span, -source.radius, color='r')
+        ax.add_artist(upper_line)
+        ax.add_artist(lower_line)
 
 
 class Mesh(object):
@@ -422,11 +434,13 @@ class Task(object):
             self.set_mesh(mesh)
 
     def add_source(self, magnet):
+        if isinstance(magnet, CurrentSheet):
+            raise NotImplementedError("Current sheets not yet accepted in Task objects. Use CurrentLoop instead.")
         if isinstance(magnet, CurrentLoop):
             self._sources.append(magnet.__copy__())
             self.done = False
         else:
-            raise TypeError("Add magnet: Wrong type supplied, expected magnet definition.")
+            raise TypeError("Only CurrentLoop objects are accepted in creation of Task objects.")
 
     def remove_source(self, index: (int, None) = None):
         """
