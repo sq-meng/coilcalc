@@ -52,8 +52,8 @@ def draw_normalized_gradient(cal: Task, cmap='inferno', norm=None, field_axis='y
         f, ax = plt.subplots()
     else:
         f = ax.figure
-    for magnet in cal.magnets:
-        draw_source(ax, magnet)
+    for source in cal.sources:
+        draw_source(ax, source)
     gradient = find_gradient(cal, lat_field_axis=field_axis, gradient_axes=gradient_axes) / cal.center_field[0]
     contour_plot = ax.contour(cal.x_mesh, cal.y_mesh, np.abs(gradient), [2e-4, 5e-4, 1e-3, 2e-3, 0.005],
                               colors='w', zorder=10)
@@ -84,8 +84,8 @@ def draw_intensity(cal: Task, cmap='inferno', norm=None, field_axis='x', vmin=0.
         f, ax = plt.subplots()
     else:
         f = ax.figure
-    for magnet in cal.magnets:
-        draw_source(ax, magnet)
+    for source in cal.sources:
+        draw_source(ax, source)
     if field_axis == 'x':
         field = cal.x_field
     elif field_axis == 'y':

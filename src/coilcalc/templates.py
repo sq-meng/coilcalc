@@ -54,7 +54,7 @@ def three_coils(half_length=259.8, r_side=300, r_center=300, coil_width=20.0, co
     :param current: Current to be fed into the coils. All 3 coils have the same current.
     :param turns_side: Winding turns on the side coils.
     :param turns_center: Winding turns on the center coil.
-    :return: A list of magnets
+    :return: A list of sources
     """
     current_side_sim = current * turns_side / 9
     current_center_sim = current * turns_center / 9

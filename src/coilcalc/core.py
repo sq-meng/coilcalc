@@ -89,7 +89,7 @@ class CurrentLoop(object):
         if value >= 1:
             self._nturns = int(value)
         else:
-            raise ValueError("Magnet: cannot define a magnet with less than 1 turn.")
+            raise ValueError("Magnet: cannot define a source with less than 1 turn.")
 
     @property
     def current(self):
@@ -257,7 +257,7 @@ class CurrentSheet(object):
         if value >= 1:
             self._nturns = int(value)
         else:
-            raise ValueError("Magnet: cannot define a magnet with less than 1 turn.")
+            raise ValueError("Magnet: cannot define a source with less than 1 turn.")
 
     @property
     def current(self):
@@ -433,18 +433,18 @@ class Task(object):
         if mesh is not None:
             self.set_mesh(mesh)
 
-    def add_source(self, magnet):
-        if isinstance(magnet, CurrentSheet):
+    def add_source(self, source):
+        if isinstance(source, CurrentSheet):
             raise NotImplementedError("Current sheets not yet accepted in Task objects. Use CurrentLoop instead.")
-        if isinstance(magnet, CurrentLoop):
-            self._sources.append(magnet.__copy__())
+        if isinstance(source, CurrentLoop):
+            self._sources.append(source.__copy__())
             self.done = False
         else:
             raise TypeError("Only CurrentLoop objects are accepted in creation of Task objects.")
 
     def remove_source(self, index: (int, None) = None):
         """
-        Remove magnet at index n.
+        Remove source at index n.
         :param index: index to be removed. Clears the list if not provided.
         :return: None
         """
@@ -494,8 +494,8 @@ class Task(object):
         y_field = np.zeros(x_mesh.shape)
         for i in range(x_mesh.shape[0]):
             for j in range(x_mesh.shape[1]):
-                for magnet in self._sources:
-                    loops = magnet.get_loop_list()
+                for source in self._sources:
+                    loops = source.get_loop_list()
                     for loop in loops:
                         xp = x_mesh[i][j]
                         yp = y_mesh[i][j]
@@ -506,10 +506,7 @@ class Task(object):
                         bx = loop_calculator.field_axial(current, a, x, r)
                         br = loop_calculator.field_radial(current, a, x, r)
                         x_field[i][j] += bx
-                        if r >= 0:
-                            y_field[i][j] += br
-                        else:
-                            y_field[i][j] -= br
+                        y_field[i][j] += br
         self.done = True
         self._x_field = x_field
         self._y_field = y_field
@@ -523,7 +520,7 @@ class Task(object):
         x_mesh, y_mesh = self._mesh.get_matrix()
         x_field = np.zeros(x_mesh.shape)
         y_field = np.zeros(x_mesh.shape)
-        loops = np.vstack([magnet.get_loop_list() for magnet in self._sources])
+        loops = np.vstack([source.get_loop_list() for source in self._sources])
         for i in range(x_mesh.shape[0]):
             for j in range(x_mesh.shape[1]):
                 xp = x_mesh[i][j]
@@ -535,10 +532,8 @@ class Task(object):
                 bx = loop_calculator.field_axial(current, a, x, r)
                 br = loop_calculator.field_radial(current, a, x, r)
                 x_field[i][j] += np.sum(bx)
-                if r >= 0:
-                    y_field[i][j] += np.sum(br)
-                else:
-                    y_field[i][j] -= np.sum(br)
+                y_field[i][j] += np.sum(br)
+
         self.done = True
         logger.timestamp(1, "SP run complete")
         self._x_field = x_field
@@ -561,10 +556,7 @@ class Task(object):
             bx = loop_calculator.field_axial(current, a, x, r)
             br = loop_calculator.field_radial(current, a, x, r)
             x_field[i][j] += np.sum(bx)
-            if r >= 0:
-                y_field[i][j] += np.sum(br)
-            else:
-                y_field[i][j] -= np.sum(br)
+            y_field[i][j] += np.sum(br)
         return x_field, y_field
 
     def _run_mp(self, processes):
@@ -576,12 +568,12 @@ class Task(object):
         y_field = np.zeros(x_mesh.shape)
         i = range(0, x_mesh.shape[0])
         j = range(0, x_mesh.shape[1])
-        magnet_loops = np.vstack([magnet.get_loop_list() for magnet in self._sources])
+        current_loops = np.vstack([source.get_loop_list() for source in self._sources])
         split_ij = _slice_list(list(product(i, j)), processes)
         logger.timestamp(0, "Slicing done")
         pool = multiprocessing.Pool(processes=processes)
         logger.timestamp(0, "processes spawned")
-        argliist = [[x, x_mesh, y_mesh, magnet_loops] for x in split_ij]
+        argliist = [[x, x_mesh, y_mesh, current_loops] for x in split_ij]
         results = pool.starmap(self._mp_process_run, argliist)
         logger.timestamp(0, "pool closed")
         for result in results:
@@ -601,7 +593,7 @@ class Task(object):
         return fx, fy
 
     @property
-    def magnets(self):
+    def sources(self):
         return self._sources
 
     @property
@@ -701,7 +693,7 @@ class Task(object):
 
 def run_task(mesh: Mesh, sources: [CurrentLoop], processes=1):
     """
-    Takes a mesh and a list of magnets and run the simulation.
+    Takes a mesh and a list of sources and run the simulation.
     :param mesh: Mesh.
     :param sources: A list of Magnets.
     :param processes: Number of parallel processes.
@@ -712,11 +704,11 @@ def run_task(mesh: Mesh, sources: [CurrentLoop], processes=1):
     return cal
 
 
-def run_magnets_on_mesh(mesh, sources_list, processes=1):
+def run_sources_on_mesh(mesh, sources_list, processes=1):
     """
-    Run multiple sets of magnets on the mesh, supports multiprocessing.
+    Run multiple sets of sources on the mesh, supports multiprocessing.
     :param mesh: Mesh to be used in calculations.
-    :param sources_list: a LIST of LISTS of magnets, like:
+    :param sources_list: a LIST of LISTS of sources, like:
     [[mag1_1, mag1_2, mag1_3],
      [mag2_2, mag2_2, mag2_3],
      ...]
@@ -726,14 +718,14 @@ def run_magnets_on_mesh(mesh, sources_list, processes=1):
     if multiprocessing is None and processes > 1:
         print("multiprocessing not working, falling back to single threaded operation")
         result = []
-        for magnets in sources_list:
-            task = Task(mesh=mesh, sources=magnets)
+        for sources in sources_list:
+            task = Task(mesh=mesh, sources=sources)
             task.run()
             result.append(task)
         return result
     else:
         pool = multiprocessing.Pool(processes=processes)
-        arglist = [[mesh, magnets] for magnets in sources_list]
+        arglist = [[mesh, sources] for sources in sources_list]
         return pool.starmap(run_task, arglist)
 
 
