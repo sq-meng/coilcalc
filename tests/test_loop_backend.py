@@ -4,6 +4,7 @@ import numpy as np
 
 
 # Tests vectorized implementation
+# TODO: find the warning.
 def test_coil_integrity():
     numbers = np.load('rand.npy')
     numbers[0:50, 0] = 0
