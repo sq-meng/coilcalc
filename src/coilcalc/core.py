@@ -161,15 +161,22 @@ class CurrentLoop(object):
         :param yp: y coords, in mm.
         :return: Field in Tesla.
         """
-        bx = 0
-        br = 0
-        for loop in self.get_loop_list():
-            a = loop[1] / 1000
-            x = (xp - loop[0]) / 1000
-            r = yp / 1000
-            current = loop[2]
-            bx += loop_calculator.field_axial(current, a, x, r)
-            br += loop_calculator.field_radial(current, a, x, r)
+        loops = self.get_loop_list()
+        a = loops[:, 1] / 1000
+        x = (xp - loops[:, 0]) / 1000
+        r = yp / 1000
+        current = loops[:, 2]
+        bx = np.sum(loop_calculator.field_axial(current, a, x, r))
+        br = np.sum(loop_calculator.field_radial(current, a, x, r))
+        # # x_field[i][j] += np.sum(bx)
+        # # y_field[i][j] += np.sum(br)
+        # for loop in self.get_loop_list():
+        #     a = loop[1] / 1000
+        #     x = (xp - loop[0]) / 1000
+        #     r = yp / 1000
+        #     current = loop[2]
+        #     bx += loop_calculator.field_axial(current, a, x, r)
+        #     br += loop_calculator.field_radial(current, a, x, r)
         return bx, br
 
     def draw_source(self, ax):
@@ -520,20 +527,12 @@ class Task(object):
         x_mesh, y_mesh = self._mesh.get_matrix()
         x_field = np.zeros(x_mesh.shape)
         y_field = np.zeros(x_mesh.shape)
-        loops = np.vstack([source.get_loop_list() for source in self._sources])
         for i in range(x_mesh.shape[0]):
             for j in range(x_mesh.shape[1]):
-                xp = x_mesh[i][j]
-                yp = y_mesh[i][j]
-                a = loops[:, 1] / 1000
-                x = (xp - loops[:, 0]) / 1000
-                r = yp / 1000
-                current = loops[:, 2]
-                bx = loop_calculator.field_axial(current, a, x, r)
-                br = loop_calculator.field_radial(current, a, x, r)
-                x_field[i][j] += np.sum(bx)
-                y_field[i][j] += np.sum(br)
-
+                for source in self.sources:
+                    bx, by = source.b_field(x_mesh[i][j], y_mesh[i][j])
+                    x_field[i][j] += bx
+                    y_field[i][j] += by
         self.done = True
         logger.timestamp(1, "SP run complete")
         self._x_field = x_field
