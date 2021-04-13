@@ -34,5 +34,5 @@ def test_agreement_sheet_and_loop():
 def test_add_currentsheet():
     cs = coilcalc.CurrentSheet([-180, 180], 123, 300, 1)
     mesh = coilcalc.Mesh([-20, 20], [-10, 10], 21, 21)
-    with pytest.raises(NotImplementedError):
-        t = coilcalc.Task(cs, mesh)
+    t = coilcalc.Task([cs], mesh)
+    t.run()

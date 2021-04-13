@@ -32,6 +32,8 @@ class CurrentLoop(object):
         self._layers = None
         self._layer_thickness = None
         self._current_multiplier = None
+        self._current_loops = None
+        self._current_loops_up_to_date = False
         self.x_span = x_span
         self.radius = radius
         self.nturns = nturns
@@ -49,6 +51,7 @@ class CurrentLoop(object):
         try:
             _ = value[1]
             self._x_span = value
+            self._current_loops_up_to_date = False
         except (TypeError, IndexError, ValueError):
             self._x_span = [value, value]
 
@@ -61,6 +64,7 @@ class CurrentLoop(object):
         try:
             _ = value[1]
             self._radius = value
+            self._current_loops_up_to_date = False
         except (TypeError, IndexError, ValueError):
             self._radius = [value, value]
 
@@ -88,6 +92,7 @@ class CurrentLoop(object):
     def nturns(self, value):
         if value >= 1:
             self._nturns = int(value)
+            self._current_loops_up_to_date = False
         else:
             raise ValueError("Magnet: cannot define a source with less than 1 turn.")
 
@@ -101,6 +106,7 @@ class CurrentLoop(object):
 
     @current.setter
     def current(self, value):
+        self._current_loops_up_to_date = False
         self._current = value
 
     @property
@@ -115,6 +121,7 @@ class CurrentLoop(object):
             raise ValueError("Magnet: at least 1 layer required.")
         else:
             self._layers = value
+            self._current_loops_up_to_date = False
 
     @property
     def layer_thickness(self):
@@ -123,6 +130,7 @@ class CurrentLoop(object):
     @layer_thickness.setter
     def layer_thickness(self, value: float):
         self._layer_thickness = value
+        self._current_loops_up_to_date = False
 
     @property
     def current_multiplier(self):
@@ -131,11 +139,12 @@ class CurrentLoop(object):
     @current_multiplier.setter
     def current_multiplier(self, value: float):
         self._current_multiplier = value
+        self._current_loops_up_to_date = False
 
     def __copy__(self):
         return CurrentLoop(self.x_span, self.radius, self.nturns, self.current, self.layers, self.layer_thickness)
 
-    def get_loop_list(self):
+    def recalculate_loop_list(self):
         """
         A list defining each loop in the coil.
         :return: [x, r, current], x and r in mm, current in amps.
@@ -152,7 +161,14 @@ class CurrentLoop(object):
             y = np.linspace(self.start[1], self.end[1], turns) + i * self.layer_thickness
             this_layer = np.vstack([x, y, np.ones(turns) * self.current]).T
             coil_layers.append(this_layer)
-        return np.vstack(coil_layers)
+        currentloops =  np.vstack(coil_layers)
+        self._current_loops = currentloops
+        self._current_loops_up_to_date = True
+
+    def get_loop_list(self):
+        if not self._current_loops_up_to_date:
+            self.recalculate_loop_list()
+        return self._current_loops
 
     def b_field(self, xp, yp):
         """
@@ -168,15 +184,6 @@ class CurrentLoop(object):
         current = loops[:, 2]
         bx = np.sum(loop_calculator.field_axial(current, a, x, r))
         br = np.sum(loop_calculator.field_radial(current, a, x, r))
-        # # x_field[i][j] += np.sum(bx)
-        # # y_field[i][j] += np.sum(br)
-        # for loop in self.get_loop_list():
-        #     a = loop[1] / 1000
-        #     x = (xp - loop[0]) / 1000
-        #     r = yp / 1000
-        #     current = loop[2]
-        #     bx += loop_calculator.field_axial(current, a, x, r)
-        #     br += loop_calculator.field_radial(current, a, x, r)
         return bx, br
 
     def draw_source(self, ax):
@@ -214,6 +221,9 @@ class CurrentSheet(object):
         self.nturns = nturns
         self.current = current
         self.current_multiplier = current_multiplier
+
+    def __copy__(self):
+        return CurrentLoop(self.x_span, self.radius[0], self.nturns, self.current)
 
     @property
     def x_span(self):
@@ -441,13 +451,12 @@ class Task(object):
             self.set_mesh(mesh)
 
     def add_source(self, source):
-        if isinstance(source, CurrentSheet):
-            raise NotImplementedError("Current sheets not yet accepted in Task objects. Use CurrentLoop instead.")
-        if isinstance(source, CurrentLoop):
+        try:
+            source.b_field(0, 0)
             self._sources.append(source.__copy__())
             self.done = False
-        else:
-            raise TypeError("Only CurrentLoop objects are accepted in creation of Task objects.")
+        except (AttributeError, TypeError):
+            raise TypeError("Only source-like objects accepted as source in Task objects.")
 
     def remove_source(self, index: (int, None) = None):
         """
@@ -567,7 +576,11 @@ class Task(object):
         y_field = np.zeros(x_mesh.shape)
         i = range(0, x_mesh.shape[0])
         j = range(0, x_mesh.shape[1])
-        current_loops = np.vstack([source.get_loop_list() for source in self._sources])
+        try:
+            current_loops = np.vstack([source.get_loop_list() for source in self._sources])
+        except AttributeError:
+            raise TypeError("multi-process run: having more than 1 processes on one Task object requires all sources to be \
+                            CurrentLoops")
         split_ij = _slice_list(list(product(i, j)), processes)
         logger.timestamp(0, "Slicing done")
         pool = multiprocessing.Pool(processes=processes)

@@ -11,7 +11,7 @@ def task():
             mesh = coilcalc.Mesh([-20, 20], [-10, 10], 21, 21)
             mytask = coilcalc.Task()
             mag1 = coilcalc.CurrentLoop([-50, 50], [20, 20], 21, 1.2, 4)
-            mag2 = coilcalc.CurrentLoop([-50, -40], [20, 20], 5, 1.2, 1)
+            mag2 = coilcalc.CurrentSheet([-50, -40], [20, 20], 5, 1.2, 1)
             mytask.set_mesh(mesh)
             mytask.add_source(mag1)
             mytask.add_source(mag2)
