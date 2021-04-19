@@ -214,6 +214,25 @@ class CurrentLoop(SourceBaseClass):
         br = np.sum(loop_calculator.field_radial(current, a, x, r))
         return bx, br
 
+    def b_field_vec(self, x_mesh, y_mesh):
+        """
+        Calculates field on a (M, N) 2-D meshgrid in a vectorized manner. Optional: if not present will fall back to
+        b_field method.
+        :param x_mesh: (M, N) array, usually from np.meshgrid
+        :param y_mesh: (M, N) array, usually from np.meshgrid
+        :return: ((M, N), (M, N)) arrays of x and y fields.
+        """
+        loops = self.get_loop_list()
+        ones_xy = np.ones(x_mesh.shape)
+        ones_z = np.ones(loops.shape[0])
+        a = ones_xy[..., None] * loops[:, 1] / 1000
+        x = (x_mesh[..., None] * ones_z - ones_xy[..., None] * loops[:, 0]) / 1000
+        r = y_mesh[..., None] * ones_z / 1000
+        current = ones_xy[..., None] * loops[:, 2]
+        bx_mesh = np.sum(loop_calculator.field_axial(current, a, x, r), axis=2)
+        by_mesh = np.sum(loop_calculator.field_radial(current, a, x, r), axis=2)
+        return bx_mesh, by_mesh
+
     def draw_source(self, ax):
         source = self
         c1 = np.asarray(source.get_loop_list())

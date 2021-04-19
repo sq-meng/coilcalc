@@ -2,6 +2,9 @@ from scipy.special import ellipe, ellipk
 from numpy import pi, sqrt, sin, linspace, sum, power
 import numpy as np
 
+
+# Any division by zero encountered in this module is later caught through (r == 0) conditions... Hopefully.
+np.seterr(divide='ignore', invalid='ignore')
 u0 = 4e-7 * pi
 
 
