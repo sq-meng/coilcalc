@@ -1,11 +1,12 @@
 from coilcalc._mpl_wrap import *
+import abc
 import numpy as np
 import coilcalc._off_axis_loop as loop_calculator
-from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator
+from scipy.interpolate import RegularGridInterpolator
 from coilcalc.calculations import find_gradient
 from itertools import product
 from coilcalc._signals import logger
-from matplotlib.pyplot import Rectangle, Circle, Polygon, Line2D
+from matplotlib.pyplot import Circle, Polygon, Line2D
 import coilcalc._current_sheet as sheet_calculator
 try:
     import multiprocessing
@@ -13,7 +14,21 @@ except ImportError:
     multiprocessing = None
 
 
-class CurrentLoop(object):
+class SourceBaseClass(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def b_field(self, xp, yp):
+        """Calculate B field at (xp, yp) from this source"""
+        return
+
+    @abc.abstractmethod
+    def __copy__(self):
+        """A source has to be able to copy itself"""
+        return
+
+
+class CurrentLoop(SourceBaseClass):
     def __init__(self, x_span: (list, float, int), radius: (list, float, int), nturns: int, current: float,
                  layers: int = 1, layer_thickness: float = 1.0, current_multiplier: float = 1.0):
         """
@@ -41,6 +56,22 @@ class CurrentLoop(object):
         self.layers = layers
         self.layer_thickness = layer_thickness
         self.current_multiplier = current_multiplier
+
+    def __copy__(self):
+        return CurrentLoop(self.x_span, self.radius, self.nturns, self.current, self.layers, self.layer_thickness)
+
+    def __eq__(self, other):
+        if not type(other) == type(self):
+            return False
+        else:
+            return all([
+                all(self.x_span == other.x_span),
+                all(self.radius == other.radius),
+                self.nturns == other.nturns,
+                self.current == other.current,
+                self.layers == other.layers,
+                self.layer_thickness == other.layer_thickness
+                ])
 
     @property
     def x_span(self):
@@ -141,9 +172,6 @@ class CurrentLoop(object):
         self._current_multiplier = value
         self._current_loops_up_to_date = False
 
-    def __copy__(self):
-        return CurrentLoop(self.x_span, self.radius, self.nturns, self.current, self.layers, self.layer_thickness)
-
     def recalculate_loop_list(self):
         """
         A list defining each loop in the coil.
@@ -161,8 +189,8 @@ class CurrentLoop(object):
             y = np.linspace(self.start[1], self.end[1], turns) + i * self.layer_thickness
             this_layer = np.vstack([x, y, np.ones(turns) * self.current]).T
             coil_layers.append(this_layer)
-        currentloops =  np.vstack(coil_layers)
-        self._current_loops = currentloops
+        current_loops = np.vstack(coil_layers)
+        self._current_loops = current_loops
         self._current_loops_up_to_date = True
 
     def get_loop_list(self):
@@ -208,7 +236,7 @@ class CurrentLoop(object):
             ax.add_artist(circle)
 
 
-class CurrentSheet(object):
+class CurrentSheet(SourceBaseClass):
     def __init__(self, x_span: (list, float, int), radius, nturns: int, current: float, current_multiplier=1):
         self._x_span = None
         self._radius = None
@@ -298,7 +326,7 @@ class CurrentSheet(object):
         rho = yp
         fr = sheet_calculator.field_radial(self.current * self.nturns, self.radius[0], self.length, x, rho)
         fx = sheet_calculator.field_axial(self.current * self.nturns, self.radius[0], self.length, x, rho)
-        return fx, fr
+        return np.asarray([fx, fr])
 
     def draw_source(self, ax):
         source = self
@@ -311,6 +339,34 @@ class CurrentSheet(object):
         lower_line = Line2D(source.x_span, -source.radius, color='r')
         ax.add_artist(upper_line)
         ax.add_artist(lower_line)
+
+
+class SourceCollection(SourceBaseClass):
+    def __init__(self, sources):
+        self._sources = []
+        self.add_sources(sources)
+
+    def __copy__(self):
+        return SourceCollection(self._sources)
+
+    def _add_source(self, source):
+        assert isinstance(source, SourceBaseClass)
+        self._sources.append(source)
+
+    def add_sources(self, sources):
+        try:
+            for source in sources:
+                self._add_source(source)
+        except TypeError:
+            self._add_source(sources)
+
+    def b_field(self, xp, yp):
+        bx, by = 0, 0
+        for source in self._sources:
+            bxp, byp = source.b_field(xp, yp)
+            bx += bxp
+            by += byp
+        return bx, by
 
 
 class Mesh(object):
@@ -452,10 +508,10 @@ class Task(object):
 
     def add_source(self, source):
         try:
-            source.b_field(0, 0)
+            assert isinstance(source, SourceBaseClass)
             self._sources.append(source.__copy__())
             self.done = False
-        except (AttributeError, TypeError):
+        except AssertionError:
             raise TypeError("Only source-like objects accepted as source in Task objects.")
 
     def remove_source(self, index: (int, None) = None):
@@ -536,12 +592,17 @@ class Task(object):
         x_mesh, y_mesh = self._mesh.get_matrix()
         x_field = np.zeros(x_mesh.shape)
         y_field = np.zeros(x_mesh.shape)
-        for i in range(x_mesh.shape[0]):
-            for j in range(x_mesh.shape[1]):
-                for source in self.sources:
-                    bx, by = source.b_field(x_mesh[i][j], y_mesh[i][j])
-                    x_field[i][j] += bx
-                    y_field[i][j] += by
+        for source in self.sources:
+            try:
+                bxs, bys = source.b_field_vec(x_mesh, y_mesh)
+                x_field += bxs
+                y_field += bys
+            except AttributeError:
+                for i in range(x_mesh.shape[0]):
+                    for j in range(x_mesh.shape[1]):
+                        bx, by = source.b_field(x_mesh[i][j], y_mesh[i][j])
+                        x_field[i][j] += bx
+                        y_field[i][j] += by
         self.done = True
         logger.timestamp(1, "SP run complete")
         self._x_field = x_field
