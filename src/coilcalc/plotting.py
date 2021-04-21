@@ -65,7 +65,7 @@ def draw_normalized_gradient(cal: Task, cmap='inferno', norm=None, field_axis='y
     draw_cell_boundary(ax, cell_length, cell_diameter)
     draw_mesh_boundary(cal.mesh, ax)
     if colorbar:
-        color_bar = f.colorbar(color_plot)
+        color_bar = f.colorbar(color_plot, ax=ax)
         color_bar.ax.set_ylabel('%s field gradient 1/cm' % gradient_axes)
     # labels
 
@@ -100,7 +100,7 @@ def draw_intensity(cal: Task, cmap='inferno', norm=None, field_axis='x', vmin=0.
     draw_cell_boundary(ax, cell_length, cell_diameter)
     draw_mesh_boundary(cal.mesh, ax)
     if colorbar:
-        color_bar = f.colorbar(color_plot)
+        color_bar = f.colorbar(color_plot, ax=ax)
         color_bar.ax.set_ylabel('%s field/ Tesla' % field_axis)
     # labels
 

@@ -216,8 +216,8 @@ class CurrentLoop(SourceBaseClass):
 
     def b_field_vec(self, x_mesh, y_mesh):
         """
-        Calculates field on a (M, N) 2-D meshgrid in a vectorized manner. Optional: if not present will fall back to
-        b_field method.
+        Calculates field on a (M, N) 2-D meshgrid in a vectorized manner.
+        Optional: if not present will fall back to b_field method.
         :param x_mesh: (M, N) array, usually from np.meshgrid
         :param y_mesh: (M, N) array, usually from np.meshgrid
         :return: ((M, N), (M, N)) arrays of x and y fields.
