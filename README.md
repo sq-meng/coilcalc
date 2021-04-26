@@ -1,8 +1,10 @@
-# `coilcalc` - Axisymmetric circular coils calculator
+# `coilcalc` - Axisymmetric circular current loops (coils) magnetic field calculator
 ## Introduction
-Highly uniform magnetic field with minimal lateral field gradient is required for the generation and preservation of the spin-polarized state of <sup>3</sup>He and <sup>129</sup>Xe gasses. `coilcalc` is designed to be useful in the design, simulation and optimization of magnet systems used to generate an uniform magnetic field used support such systems.
+Highly uniform magnetic field with minimal lateral field gradient is required for the generation and preservation of the spin-polarized state of <sup>3</sup>He and <sup>129</sup>Xe gasses and other noble gas species with non-zero nuclear spin. `coilcalc` is designed to be useful in the design, simulation and optimization of magnet systems used to generate an uniform magnetic field intended to support such systems.
+## Installation
+`pip install coilcalc`. Requires Python >= 3.4,  `numpy` and `matplotlib`.
 ## Limitations
-Before you get your hopes up, `coilcalc` is only for circular axisymmetric current loops with no support for non-unity relative permeability. This geometry is surprisingly versatile and useful, but this package won't get you far for other problems other than building spin-polarizer magnets. For proper 2D EM FEM software check [FEMM](https://www.femm.info/wiki/HomePage) out. `coilcalc` is still going to be useful for quickly mapping out a large parameter space, or for getting a quick answer typing on one hand while holding that magnet wire mid-winding with the other.
+Before you get your hopes up, `coilcalc` is only for circular axisymmetric current loops with no support for non-unity relative permeability. This geometry is versatile and useful, but this package won't get you far for other problems other than building spin-polarizer magnets. For proper 2D EM FEM software check [FEMM](https://www.femm.info/wiki/HomePage) out. `coilcalc` is still going to be useful for quickly mapping out a large parameter space, or for getting a quick answer typing on one hand while holding that magnet wire mid-winding with the other.
 
 Support for infinitely thin cylindrical current sheets are also being worked on. You can spawn one with `coilcalc.CurrentSheet` with the usual parameters, but these are not accepted into `Task`s yet. 
 
