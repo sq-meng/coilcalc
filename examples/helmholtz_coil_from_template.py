@@ -11,8 +11,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 if __name__ == '__main__':
+    # call the template function - check the module yourself for usages.
     coils = coilcalc.templates.helmholtz_coil(r=300)
+    # Create a mesh from x = -200 to 200, y = -200 t0 200, 100 steps each
     mesh = coilcalc.Mesh([-200, 200], [-200, 200], 100, 100)
+    # Puts the two into a Task object.
     task = coilcalc.Task(coils, mesh)
     # Runs the calculations.
     task.run()
