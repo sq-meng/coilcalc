@@ -13,13 +13,14 @@ import numpy as np
 if __name__ == "__main__":
     # Physical parameters
     r = 400
+    l = r
     bobbin_width = 10
     nturns = 100
     current = 1.0
     winding_layers = 10
     wire_diameter = 1.0
     # derived bobbin construction parameters
-    bobbin_xspan = np.array([r / 2 - bobbin_width / 2, r / 2 + bobbin_width / 2])
+    bobbin_xspan = np.array([l / 2 - bobbin_width / 2, l / 2 + bobbin_width / 2])
     bobbin_radius = r - winding_layers * wire_diameter / 2
     # Build "left" coil
 
