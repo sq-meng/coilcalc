@@ -2,9 +2,9 @@
 This example demonstrates how a coil is defined and simulated.
 """
 
-import coilcalc
-import coilcalc.plotting
-import coilcalc.calculations
+import magcoilcalc
+import magcoilcalc.plotting
+import magcoilcalc.calculations
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -24,21 +24,21 @@ if __name__ == "__main__":
     bobbin_radius = r - winding_layers * wire_diameter / 2
     # Build "left" coil
 
-    c1 = coilcalc.CurrentLoop(-bobbin_xspan, bobbin_radius, nturns, current,
-                              layers=winding_layers, layer_thickness=wire_diameter)
+    c1 = magcoilcalc.CurrentLoop(-bobbin_xspan, bobbin_radius, nturns, current,
+                                 layers=winding_layers, layer_thickness=wire_diameter)
     # Build "right" coil
-    c2 = coilcalc.CurrentLoop(bobbin_xspan, bobbin_radius, nturns, current,
-                              layers=winding_layers, layer_thickness=wire_diameter)
+    c2 = magcoilcalc.CurrentLoop(bobbin_xspan, bobbin_radius, nturns, current,
+                                 layers=winding_layers, layer_thickness=wire_diameter)
     # Create a mesh from x = -120 to 120, y = -100 t0 100, 100 steps each
-    mesh = coilcalc.Mesh([-120, 120], [-100, 100], 100, 100)
+    mesh = magcoilcalc.Mesh([-120, 120], [-100, 100], 100, 100)
     # Puts the two into a Task object.
-    task = coilcalc.Task([c1, c2], mesh)
+    task = magcoilcalc.Task([c1, c2], mesh)
     # Runs the calculations.
     task.run()
     # Plots intensity and lateral field gradient.
-    coilcalc.plotting.draw_intensity(task, cell_length=80, cell_diameter=60)
-    coilcalc.plotting.draw_normalized_gradient(task, cell_length=80, cell_diameter=60)
+    magcoilcalc.plotting.draw_intensity(task, cell_length=80, cell_diameter=60)
+    magcoilcalc.plotting.draw_normalized_gradient(task, cell_length=80, cell_diameter=60)
     # Calculates and prints Figure-of-Merit
-    print("FoM: %f" % coilcalc.calculations.fom_cylindrical_cell(task, length=80, diameter=60))
+    print("FoM: %f" % magcoilcalc.calculations.fom_cylindrical_cell(task, length=80, diameter=60))
     # stops the figures from disappearing
     plt.show()

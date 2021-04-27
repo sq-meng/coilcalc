@@ -1,5 +1,5 @@
 import time
-from coilcalc._settings import DEV
+from magcoilcalc._settings import DEV
 
 
 class Logger(object):

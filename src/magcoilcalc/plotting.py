@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from coilcalc.core import Task, CurrentLoop, Mesh
+from magcoilcalc.core import Task, CurrentLoop, Mesh
 from matplotlib.pyplot import Rectangle, Circle
-from coilcalc.calculations import find_gradient
+from magcoilcalc.calculations import find_gradient
 from matplotlib.colors import LogNorm, Normalize
 
 

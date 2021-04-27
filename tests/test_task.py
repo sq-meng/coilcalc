@@ -1,6 +1,6 @@
-import coilcalc
+import magcoilcalc
 import pytest
-import coilcalc.calculations
+import magcoilcalc.calculations
 import numpy as np
 
 
@@ -8,10 +8,10 @@ import numpy as np
 def task():
     class TaskFactory(object):
         def get(self):
-            mesh = coilcalc.Mesh([-20, 20], [-10, 10], 21, 21)
-            mytask = coilcalc.Task()
-            mag1 = coilcalc.CurrentLoop([-50, 50], [20, 20], 21, 1.2, 4)
-            mag2 = coilcalc.CurrentSheet([-50, -40], [20, 20], 5, 1.2, 1)
+            mesh = magcoilcalc.Mesh([-20, 20], [-10, 10], 21, 21)
+            mytask = magcoilcalc.Task()
+            mag1 = magcoilcalc.CurrentLoop([-50, 50], [20, 20], 21, 1.2, 4)
+            mag2 = magcoilcalc.CurrentSheet([-50, -40], [20, 20], 5, 1.2, 1)
             mytask.set_mesh(mesh)
             mytask.add_source(mag1)
             mytask.add_source(mag2)
@@ -25,10 +25,10 @@ def test_task_run(task):
         _ = t1.x_field
     t1._run_sp_legacy()
     _ = t1.x_field
-    coilcalc.calculations.find_gradient(t1)
+    magcoilcalc.calculations.find_gradient(t1)
     with pytest.raises(ValueError):
-        coilcalc.calculations.fom_cylindrical_cell(t1, 30, 25)
-    coilcalc.calculations.fom_cylindrical_cell(t1, 30, 15)
+        magcoilcalc.calculations.fom_cylindrical_cell(t1, 30, 25)
+    magcoilcalc.calculations.fom_cylindrical_cell(t1, 30, 15)
 
 
 def test_task_slicer():
@@ -57,11 +57,11 @@ def test_mp_sp(task):
 
 def test_run_tasks_mp(task):
     tasks = [task.get(), task.get(), task.get()]
-    tasks = coilcalc.run_tasks(tasks, processes=2)
+    tasks = magcoilcalc.run_tasks(tasks, processes=2)
     assert ([x.done for x in tasks])
 
 
 def test_run_tasks_sp(task):
     tasks = [task.get(), task.get(), task.get()]
-    tasks = coilcalc.run_tasks(tasks, processes=1)
+    tasks = magcoilcalc.run_tasks(tasks, processes=1)
     assert ([x.done for x in tasks])

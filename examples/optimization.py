@@ -3,9 +3,9 @@ Example on how to use scipy.optimize.minimize to find the optimal design
 """
 
 from scipy.optimize import minimize
-import coilcalc
-import coilcalc.plotting
-import coilcalc.calculations
+import magcoilcalc
+import magcoilcalc.plotting
+import magcoilcalc.calculations
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -26,15 +26,15 @@ def construction_func(length):
     bobbin_radius = r - winding_layers * wire_diameter / 2
     # Build "left" coil
 
-    c1 = coilcalc.CurrentLoop(-bobbin_xspan, bobbin_radius, nturns, current,
-                              layers=winding_layers, layer_thickness=wire_diameter)
+    c1 = magcoilcalc.CurrentLoop(-bobbin_xspan, bobbin_radius, nturns, current,
+                                 layers=winding_layers, layer_thickness=wire_diameter)
     # Build "right" coil
-    c2 = coilcalc.CurrentLoop(bobbin_xspan, bobbin_radius, nturns, current,
-                              layers=winding_layers, layer_thickness=wire_diameter)
+    c2 = magcoilcalc.CurrentLoop(bobbin_xspan, bobbin_radius, nturns, current,
+                                 layers=winding_layers, layer_thickness=wire_diameter)
     # Create a mesh from x = -120 to 120, y = -100 t0 100, 100 steps each
-    mesh = coilcalc.Mesh([-120, 120], [-50, 50], 50, 50)
+    mesh = magcoilcalc.Mesh([-120, 120], [-50, 50], 50, 50)
     # Puts the two into a Task object.
-    task = coilcalc.Task([c1, c2], mesh)
+    task = magcoilcalc.Task([c1, c2], mesh)
     return task
 
 
@@ -45,7 +45,7 @@ def opt_func(pars):
     # Runs the calculations.
     task.run()
     # Calculates FoM and return the value.
-    return coilcalc.calculations.fom_cylindrical_cell(task, 180, 60)
+    return magcoilcalc.calculations.fom_cylindrical_cell(task, 180, 60)
 
 
 if __name__ == '__main__':
@@ -57,6 +57,6 @@ if __name__ == '__main__':
     t1 = construction_func(initial_l)
     t2 = construction_func(optimal_l)
     t1.run(), t2.run()
-    coilcalc.plotting.draw_normalized_gradient(t1, cell_length=180, cell_diameter=60)
-    coilcalc.plotting.draw_normalized_gradient(t2, cell_length=180, cell_diameter=60)
+    magcoilcalc.plotting.draw_normalized_gradient(t1, cell_length=180, cell_diameter=60)
+    magcoilcalc.plotting.draw_normalized_gradient(t2, cell_length=180, cell_diameter=60)
     plt.show()

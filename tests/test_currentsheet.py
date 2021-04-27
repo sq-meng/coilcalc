@@ -1,9 +1,9 @@
-import coilcalc
+import magcoilcalc
 import numpy as np
 
 
 def test_current_sheet_spawn():
-    cs = coilcalc.CurrentSheet([-50, 10], 10, 50, 1.2)
+    cs = magcoilcalc.CurrentSheet([-50, 10], 10, 50, 1.2)
     assert len(cs.start) == 2
     assert cs.nturns == 50
     assert all(cs.radius == [10, 10])
@@ -11,15 +11,15 @@ def test_current_sheet_spawn():
 
 
 def test_current_sheet_get_field():
-    cs = coilcalc.CurrentSheet([-50, 10], 10, 50, 1.2)
+    cs = magcoilcalc.CurrentSheet([-50, 10], 10, 50, 1.2)
     cs.b_field(0, 0)
     cs.b_field(20, 20)
     cs.b_field(-20, 20)
 
 
 def test_agreement_sheet_and_loop():
-    cs = coilcalc.CurrentSheet([-180, 180], 123, 300, 1)
-    cl = coilcalc.CurrentLoop([-180, 180], 123, 300, 1)
+    cs = magcoilcalc.CurrentSheet([-180, 180], 123, 300, 1)
+    cl = magcoilcalc.CurrentLoop([-180, 180], 123, 300, 1)
     xl = np.linspace(-300, 300, 10)
     yl = np.linspace(-100, 100, 10)
     xg, yg = np.meshgrid(xl, yl)
@@ -31,7 +31,7 @@ def test_agreement_sheet_and_loop():
 
 
 def test_add_currentsheet():
-    cs = coilcalc.CurrentSheet([-180, 180], 123, 300, 1)
-    mesh = coilcalc.Mesh([-20, 20], [-10, 10], 21, 21)
-    t = coilcalc.Task([cs], mesh)
+    cs = magcoilcalc.CurrentSheet([-180, 180], 123, 300, 1)
+    mesh = magcoilcalc.Mesh([-20, 20], [-10, 10], 21, 21)
+    t = magcoilcalc.Task([cs], mesh)
     t.run()

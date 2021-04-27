@@ -1,8 +1,8 @@
-import coilcalc
+import magcoilcalc
 
 
 def test_magnet_creation():
-    mag = coilcalc.CurrentLoop([-50, 10], 10, 101, 2.0, 3, 1)
+    mag = magcoilcalc.CurrentLoop([-50, 10], 10, 101, 2.0, 3, 1)
     assert len(mag.start) == 2
     assert mag.nturns == 101
     assert all(mag.radius == [10, 10])
@@ -12,6 +12,6 @@ def test_magnet_creation():
 
 
 def test_magnet_get_field():
-    mag = coilcalc.CurrentLoop([-50, 10], 10, 101, 2.0, 3, 1)
+    mag = magcoilcalc.CurrentLoop([-50, 10], 10, 101, 2.0, 3, 1)
     mag.b_field(0, 0)
     mag.b_field(10, 0)

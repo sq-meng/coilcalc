@@ -1,1 +1,0 @@
-from coilcalc.core import *

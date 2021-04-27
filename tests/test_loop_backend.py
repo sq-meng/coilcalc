@@ -1,5 +1,5 @@
-import coilcalc._off_axis_loop as m1
-import coilcalc._loop_calc_dennison as m2
+import magcoilcalc._off_axis_loop as m1
+import magcoilcalc._loop_calc_dennison as m2
 import numpy as np
 
 

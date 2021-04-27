@@ -1,5 +1,5 @@
-import coilcalc
-from coilcalc import templates
+import magcoilcalc
+from magcoilcalc import templates
 
 
 def test_comp_solenoid():

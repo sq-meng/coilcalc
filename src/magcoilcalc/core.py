@@ -1,13 +1,13 @@
-from coilcalc._mpl_wrap import *
+from magcoilcalc._mpl_wrap import *
 import abc
 import numpy as np
-import coilcalc._off_axis_loop as loop_calculator
+import magcoilcalc._off_axis_loop as loop_calculator
 from scipy.interpolate import RegularGridInterpolator
-from coilcalc.calculations import find_gradient
+from magcoilcalc.calculations import find_gradient
 from itertools import product
-from coilcalc._signals import logger
+from magcoilcalc._signals import logger
 from matplotlib.pyplot import Circle, Polygon, Line2D
-import coilcalc._current_sheet as sheet_calculator
+import magcoilcalc._current_sheet as sheet_calculator
 try:
     import multiprocessing
 except ImportError:
