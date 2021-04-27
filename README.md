@@ -6,7 +6,7 @@ Highly uniform magnetic field with minimal lateral field gradient is required fo
 ## Limitations
 Before you get your hopes up, `magcoilcalc` is only for circular axisymmetric current loops with no support for non-unity relative permeability. This geometry is versatile and useful, but this package won't get you far for other problems other than building spin-polarizer magnets. For proper 2D EM FEM software check [FEMM](https://www.femm.info/wiki/HomePage) out. `magcoilcalc` is still going to be useful for quickly mapping out a large parameter space, or for getting a quick answer typing on one hand while holding that magnet wire mid-winding with the other.
 
-Support for infinitely thin cylindrical current sheets are also being worked on. You can spawn one with `magcoilcalc.CurrentSheet` with the usual parameters, but these are not accepted into `Task`s yet. 
+Support for infinitely thin cylindrical current sheets are also being worked on. You can spawn one with `magcoilcalc.CurrentSheet` with the usual parameters, but these are not vectorized so can be slow on a large mesh. 
 
 ## Mu-metal shielding
 `magcoilcalc` in incapable of dealing with non-unity relative permeability. Simulate mu-metal shields in `FEMM` upon your finished design in `magcoilcalc`.
