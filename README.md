@@ -1,4 +1,4 @@
-# `magcoilcalc` - Axisymmetric circular current loops (coils) magnetic field calculator
+# magcoilcalc - Axisymmetric circular current loops (coils) magnetic field calculator
 ## Introduction
 Highly uniform magnetic field with minimal lateral field gradient is required for the generation and preservation of the spin-polarized state of <sup>3</sup>He and <sup>129</sup>Xe gasses and other noble gas species with non-zero nuclear spin. `magcoilcalc` is designed to be useful in the design, simulation and optimization of magnet systems used to generate an uniform magnetic field intended to support such systems.
 ## Installation
