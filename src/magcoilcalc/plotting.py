@@ -9,7 +9,7 @@ from matplotlib.colors import LogNorm, Normalize
 def draw_cell_boundary(ax, width, height, x_offset=0, y_offset=0, color=(0.8, 0.8, 0.8)):
     r = Rectangle((-width/2 + x_offset, -height/2 + y_offset), width, height,
                   fill=False, linewidth=1, edgecolor=color, linestyle='--')
-    ax.plot(x_offset, y_offset, 'b+', color=color)
+    ax.plot(x_offset, y_offset, '+', color=color)
     ax.add_artist(r)
     return r
 
