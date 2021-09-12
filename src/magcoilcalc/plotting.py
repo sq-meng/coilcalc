@@ -1,15 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from magcoilcalc.core import Task, CurrentLoop, Mesh
-from matplotlib.pyplot import Rectangle, Circle
+from matplotlib.pyplot import Rectangle
 from magcoilcalc.calculations import find_gradient
 from matplotlib.colors import LogNorm, Normalize
 
 
-def draw_cell_boundary(ax, width, height, x_offset=0, y_offset=0, color=(0.8, 0.8, 0.8)):
+def draw_cell_boundary(ax, width, height, x_offset=0, y_offset=0):
     r = Rectangle((-width/2 + x_offset, -height/2 + y_offset), width, height,
-                  fill=False, linewidth=1, edgecolor=color, linestyle='--')
-    ax.plot(x_offset, y_offset, 'b+', color=color)
+                  fill=False, linewidth=1, edgecolor='white', linestyle='--')
+    ax.plot(x_offset, y_offset, 'b+')
     ax.add_artist(r)
     return r
 
