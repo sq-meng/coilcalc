@@ -14,5 +14,5 @@ Support for infinitely thin cylindrical current sheets are also being worked on.
 ## Usage
 Users are encouraged to refer to cookbook examples for usage examples with line-by-line comments.
 
-## Acknowledgements
+## Found a bug?
 The author still discovers yet another misconception in his understanding of elementary electromagnetism once in a while. If you find something not quite right, you are probably right - open an issue or drop me an email!
