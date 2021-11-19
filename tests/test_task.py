@@ -23,7 +23,7 @@ def test_task_run(task):
     t1 = task.get()
     with pytest.raises(ValueError):
         _ = t1.x_field
-    t1._run_sp_legacy()
+    t1.run()
     _ = t1.x_field
     magcoilcalc.calculations.find_gradient(t1)
     with pytest.raises(ValueError):
@@ -42,12 +42,14 @@ def test_mp_sp(task):
 
     assert task1 is not task2
     assert task2 is not task3
-
-    task1._run_mp(processes=4)
+    with pytest.raises(TypeError):
+        task1.run(processes=4)
+    assert not task1.done
+    task1.run()
     assert task1.done
     assert not task2.done
     task2._run_sp()
-    task3._run_sp_legacy()
+    task3._run_sp()
 
     assert np.all(np.isclose(task1.x_field, task3.x_field))
     assert np.all(np.isclose(task1.y_field, task3.y_field))

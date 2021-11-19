@@ -270,7 +270,7 @@ class CurrentSheet(SourceBaseClass):
         self.current_multiplier = current_multiplier
 
     def __copy__(self):
-        return CurrentLoop(self.x_span, self.radius[0], self.nturns, self.current)
+        return CurrentSheet(self.x_span, self.radius[0], self.nturns, self.current, self.current_multiplier)
 
     @property
     def x_span(self):
