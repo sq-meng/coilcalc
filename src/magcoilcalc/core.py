@@ -616,6 +616,7 @@ class Task(object):
                 bxs, bys = source.b_field_vec(x_mesh, y_mesh)
                 x_field += bxs
                 y_field += bys
+            # If no vectorized method is present
             except AttributeError:
                 for i in range(x_mesh.shape[0]):
                     for j in range(x_mesh.shape[1]):
