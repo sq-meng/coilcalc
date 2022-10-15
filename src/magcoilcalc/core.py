@@ -29,8 +29,8 @@ class SourceBaseClass(object):
 
 
 class CurrentLoop(SourceBaseClass):
-    def __init__(self, x_span: (list, float, int), radius: (list, float, int), nturns: int, current: float,
-                 layers: int = 1, layer_thickness: float = 1.0, current_multiplier: float = 1.0):
+    def __init__(self, x_span: (list, float, int), radius: (list, float, int), nturns: (int, float), current: float,
+                 layers: int = 1, layer_thickness: float = 1.0):
         """
         :param x_span: [x, y] coordinates for one end of the coil, in mm.
         :param radius: [x, y] for the other end, in mm.
@@ -39,6 +39,7 @@ class CurrentLoop(SourceBaseClass):
         :param layers: Number of layers of coil that is wound on top of each other.
         :param layer_thickness: Thickness of each winding layer in mm.
         """
+        self.current_multiplier = 1
         self._x_span = None
         self._radius = None
         self._nturns = None
@@ -55,10 +56,12 @@ class CurrentLoop(SourceBaseClass):
         self.current = current
         self.layers = layers
         self.layer_thickness = layer_thickness
-        self.current_multiplier = current_multiplier
 
     def __copy__(self):
-        return CurrentLoop(self.x_span, self.radius, self.nturns, self.current, self.layers, self.layer_thickness)
+        cl = CurrentLoop(self.x_span, self.radius, self.nturns, self._current, self.layers, self.layer_thickness)
+        cl.current_multiplier = self.current_multiplier
+        return cl
+
 
     def __eq__(self, other):
         if not type(other) == type(self):
@@ -123,6 +126,7 @@ class CurrentLoop(SourceBaseClass):
     def nturns(self, value):
         if value >= 1:
             self._nturns = int(value)
+            self.current_multiplier = value / int(value)
             self._current_loops_up_to_date = False
         else:
             raise ValueError("Magnet: cannot define a source with less than 1 turn.")
@@ -133,7 +137,7 @@ class CurrentLoop(SourceBaseClass):
         Current in the coil, amps.
         :return: float.
         """
-        return self._current
+        return self._current * self.current_multiplier
 
     @current.setter
     def current(self, value):
@@ -256,21 +260,22 @@ class CurrentLoop(SourceBaseClass):
 
 
 class CurrentSheet(SourceBaseClass):
-    def __init__(self, x_span: (list, float, int), radius, nturns: int, current: float, current_multiplier=1):
+    def __init__(self, x_span: (list, float, int), radius, nturns: int, current: float):
         self._x_span = None
         self._radius = None
         self._nturns = None
         self._reverse_polarity = None
         self._current = None
-        self._current_multiplier = None
+        self._current_multiplier = 1.0
         self.x_span = x_span
         self.radius = radius
         self.nturns = nturns
         self.current = current
-        self.current_multiplier = current_multiplier
 
     def __copy__(self):
-        return CurrentSheet(self.x_span, self.radius[0], self.nturns, self.current, self.current_multiplier)
+        cs = CurrentSheet(self.x_span, self.radius[0], self.nturns, self.current)
+        cs._current_multiplier = self._current_multiplier
+        return cs
 
     @property
     def x_span(self):
@@ -319,6 +324,7 @@ class CurrentSheet(SourceBaseClass):
     @nturns.setter
     def nturns(self, value):
         if value >= 1:
+            self._current_multiplier = value / int(value)
             self._nturns = int(value)
         else:
             raise ValueError("Magnet: cannot define a source with less than 1 turn.")
@@ -329,7 +335,7 @@ class CurrentSheet(SourceBaseClass):
         Current in the coil, amps.
         :return: float.
         """
-        return self._current
+        return self._current * self._current_multiplier
 
     @current.setter
     def current(self, value):
